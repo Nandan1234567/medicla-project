@@ -38,26 +38,24 @@
     </div>
   </nav>
 
-  <div class="container dashboard-grid">
-    <!-- Sidebar / Form -->
-    <aside>
-      <div class="glass-panel" style="padding: 2rem; position: sticky; top: 100px;">
-        <h3 style="margin-bottom: 1.5rem; color: var(--primary-color);">New Prediction</h3>
-        <form id="predictionForm">
-          <div class="form-group">
-            <label for="symptoms">Symptoms Description</label>
-            <textarea id="symptoms" class="form-control" required
-              placeholder="E.g., I have a high fever, headache, and sore throat..." rows="5"></textarea>
-            <small style="color: var(--text-secondary);">Be as specific as possible.</small>
-          </div>
 
-          <div class="form-group">
-            <label for="age">Age</label>
-            <input type="number" id="age" class="form-control" placeholder="Years" required min="0" max="120">
-          </div>
+  <!-- Centered Dashboard Layout -->
+  <div class="container" style="max-width: 900px; padding-top: 100px; padding-bottom: 3rem;">
 
-          <div class="form-group">
-            <label for="severity">Perceived Severity (Optional)</label>
+    <!-- Prediction Form (Centered at Top) -->
+    <div class="glass-panel" style="padding: 2rem; margin-bottom: 2rem;">
+      <h3 style="text-align: center; margin-bottom: 1.5rem; color: var(--primary-color);">New Prediction</h3>
+      <form id="predictionForm">
+        <div class="form-group">
+          <label for="symptoms">Symptoms Description</label>
+          <textarea id="symptoms" class="form-control" required
+            placeholder="E.g., I have a high fever, headache, and sore throat..." rows="4"></textarea>
+          <small style="color: var(--text-secondary);">Be as specific as possible.</small>
+        </div>
+
+        <div style="display: flex; gap: 1rem; align-items: end;">
+          <div class="form-group" style="flex: 1;">
+            <label for="severity">Perceived Severity</label>
             <select id="severity" class="form-control">
               <option value="low">Low (Mild discomfort)</option>
               <option value="medium">Medium (Affects daily activities)</option>
@@ -65,59 +63,98 @@
             </select>
           </div>
 
-          <button type="submit" class="btn btn-primary" style="width: 100%;">
-            Running Analysis...
+          <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2rem;">
+            🔍 Analyze Symptoms
           </button>
-        </form>
-      </div>
-    </aside>
+        </div>
+      </form>
+    </div>
 
-    <!-- Main Content / Results -->
-    <main>
-      <div id="welcomeMessage" class="glass-panel" style="padding: 3rem; text-align: center;">
-        <h2>Welcome to your Health Dashboard</h2>
-        <p style="color: var(--text-secondary); margin-top: 1rem;">Enter your symptoms on the left to get an AI-powered
-          preliminary diagnosis.</p>
-        <div style="margin-top: 2rem; font-size: 4rem;">🩺</div>
-      </div>
+    <!-- Welcome Message (Centered Below Form) -->
+    <div id="welcomeMessage" class="glass-panel" style="padding: 3rem; text-align: center;">
+      <h2>Welcome to your Health Dashboard</h2>
+      <p style="color: var(--text-secondary); margin-top: 1rem;">Enter your symptoms above to get an AI-powered
+        preliminary diagnosis.</p>
+      <div style="margin-top: 2rem; font-size: 4rem;">🩺</div>
+    </div>
 
-      <div id="resultsArea" style="display: none;">
-        <div class="glass-panel result-card">
-          <div style="display: flex; justify-content: space-between; align-items: start;">
-            <div>
-              <span
-                style="background: var(--primary-light); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem; text-transform: uppercase;"
-                id="urgencyBadge">Moderate</span>
-              <h2 style="margin-top: 0.5rem; font-size: 2rem;" id="diseaseName">Common Cold</h2>
-            </div>
-            <div style="text-align: right;">
-              <div style="font-size: 2rem; font-weight: 700; color: var(--primary-color);"><span
-                  id="confidenceValue">85</span>%</div>
-              <div style="font-size: 0.875rem; color: var(--text-secondary);">Confidence</div>
-            </div>
+    <!-- Results Area (Centered Below Welcome) -->
+    <div id="resultsArea" style="display: none;">
+      <div class="glass-panel result-card">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <div>
+            <span
+              style="background: var(--primary-light); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.875rem; text-transform: uppercase;"
+              id="urgencyBadge">Moderate</span>
+            <h2 style="margin-top: 0.5rem; font-size: 2rem;" id="diseaseName">Common Cold</h2>
           </div>
-
-          <div class="confidence-bar">
-            <div class="confidence-fill" id="confidenceBar" style="width: 0%;"></div>
-          </div>
-
-          <h4 style="margin-top: 2rem;">Recommended Actions</h4>
-          <ul class="recommendations-list" id="recommendationsList">
-            <!-- Populated by JS -->
-          </ul>
-
-          <div id="emergencyWarning"
-            style="display: none; margin-top: 2rem; padding: 1rem; background-color: rgba(239, 83, 80, 0.1); border: 1px solid var(--error); border-radius: 0.5rem; color: var(--error);">
-            <strong>⚠️ EMERGENCY WARNING:</strong> Your symptoms indicate a potential medical emergency. Please seek
-            immediate professional medical attention.
+          <div style="text-align: right;">
+            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-color);"><span
+                id="confidenceValue">85</span>%</div>
+            <div style="font-size: 0.875rem; color: var(--text-secondary);">Confidence</div>
           </div>
         </div>
 
-        <div style="margin-top: 2rem; text-align: center;">
-          <button onclick="resetDashboard()" class="btn btn-secondary">New Prediction</button>
+        <div class="confidence-bar">
+          <div class="confidence-fill" id="confidenceBar" style="width: 0%;"></div>
+        </div>
+
+        <h4 style="margin-top: 2rem;">Recommended Actions</h4>
+        <ul class="recommendations-list" id="recommendationsList">
+          <!-- Populated by JS -->
+        </ul>
+
+        <div id="emergencyWarning"
+          style="display: none; margin-top: 2rem; padding: 1rem; background-color: rgba(239, 83, 80, 0.1); border: 1px solid var(--error); border-radius: 0.5rem; color: var(--error);">
+          <strong>⚠️ EMERGENCY WARNING:</strong> Your symptoms indicate a potential medical emergency. Please seek
+          immediate professional medical attention.
+        </div>
+
+        <!-- Wellness Plan Section -->
+        <div style="margin-top: 3rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
+          <h3 style="color: var(--primary-dark); margin-bottom: 1.5rem;">Your Personalized Wellness Plan</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+
+            <!-- Precautions Card (FIRST as requested) -->
+            <div class="glass-panel" style="padding: 1.5rem; background: rgba(255, 255, 255, 0.4);">
+              <h4
+                style="color: var(--primary-color); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                <span style="font-size: 1.5rem;">🛡️</span> Precautions
+              </h4>
+              <ul id="precautionsList" style="padding-left: 1.2rem; color: var(--text-secondary); line-height: 1.6;">
+                <!-- Populated by JS -->
+              </ul>
+            </div>
+
+            <!-- Diet Card (SECOND) -->
+            <div class="glass-panel" style="padding: 1.5rem; background: rgba(255, 255, 255, 0.4);">
+              <h4
+                style="color: var(--primary-color); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                <span style="font-size: 1.5rem;">🥗</span> Diet Plan
+              </h4>
+              <ul id="dietList" style="padding-left: 1.2rem; color: var(--text-secondary); line-height: 1.6;">
+                <!-- Populated by JS -->
+              </ul>
+            </div>
+
+            <!-- Exercise Card (LAST) -->
+            <div class="glass-panel" style="padding: 1.5rem; background: rgba(255, 255, 255, 0.4);">
+              <h4
+                style="color: var(--primary-color); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                <span style="font-size: 1.5rem;">🧘</span> Exercise
+              </h4>
+              <ul id="exerciseList" style="padding-left: 1.2rem; color: var(--text-secondary); line-height: 1.6;">
+                <!-- Populated by JS -->
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
-    </main>
+
+      <div style="margin-top: 2rem; text-align: center;">
+        <button onclick="resetDashboard()" class="btn btn-secondary">New Prediction</button>
+      </div>
+    </div>
   </div>
 
   <script src="js/app.js"></script>

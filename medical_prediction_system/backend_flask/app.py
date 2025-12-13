@@ -114,11 +114,11 @@ def predict_disease(symptoms):
 
         is_emergency = any(keyword in symptoms.lower() for keyword in emergency_keywords)
 
-        # Get alternatives from result (skip first which is primary diagnosis)
+        # Get alternatives
         alternatives = result.get('alternatives', [])[1:4] if len(result.get('alternatives', [])) > 1 else []
 
-        # Generate recommendations
-        recommendations = generate_recommendations(
+        # Generate recommendations (returns dict with plans)
+        rec_data = generate_recommendations(
             result.get('disease', 'Unknown'),
             result.get('confidence', 0),
             is_emergency
@@ -135,7 +135,10 @@ def predict_disease(symptoms):
             },
             'alternatives': alternatives,
             'keyFeatures': [],
-            'recommendations': recommendations,
+            'recommendations': rec_data['actions'],
+            'dietPlan': rec_data['diet'],
+            'exercisePlan': rec_data['exercise'],
+            'precautions': rec_data['precautions'],
             'isEmergency': is_emergency,
             'emergencyKeywords': [kw for kw in emergency_keywords if kw in symptoms.lower()] if is_emergency else []
         }
@@ -266,36 +269,65 @@ def generate_recommendations(disease, confidence, is_emergency):
             'priority': 'medium'
         })
 
-    # Disease-specific recommendations
+    # Disease-specific recommendations database
     disease_lower = disease.lower()
 
-    if 'headache' in disease_lower:
+    # Initialize plan lists
+    diet = []
+    workouts = []
+    precautions = []
+
+    if 'headache' in disease_lower or 'migraine' in disease_lower:
         recommendations.extend([
-            {'type': 'self-care', 'description': 'Rest in quiet, dark room', 'priority': 'medium'},
-            {'type': 'self-care', 'description': 'Stay hydrated - drink plenty of water', 'priority': 'medium'},
-            {'type': 'self-care', 'description': 'Apply cold compress to forehead', 'priority': 'low'}
+            {'type': 'self-care', 'description': 'Rest in a quiet, dark room to reduce sensory overload', 'priority': 'medium'},
+            {'type': 'self-care', 'description': 'Apply a cold or warm compress to head or neck', 'priority': 'medium'}
         ])
-    elif 'fever' in disease_lower:
+        diet = ["Ginger tea (anti-inflammatory)", "Magnesium-rich foods (spinach, almonds)", "Stay hydrated with water", "Avoid caffeine and alcohol"]
+        workouts = ["Gentle neck stretching", "Yoga (Child's Pose)", "Deep breathing exercises", "Avoid high-intensity cardio"]
+        precautions = ["Avoid bright screens and loud noises", "Maintain a regular sleep schedule", "Monitor blood pressure", "Track potential triggers"]
+
+    elif 'fever' in disease_lower or 'flu' in disease_lower:
         recommendations.extend([
-            {'type': 'self-care', 'description': 'Get plenty of rest', 'priority': 'high'},
-            {'type': 'self-care', 'description': 'Drink fluids to prevent dehydration', 'priority': 'high'},
-            {'type': 'medication', 'description': 'Consider fever reducer as directed', 'priority': 'medium'}
+            {'type': 'self-care', 'description': 'Get plenty of rest to help your body fight infection', 'priority': 'high'},
+            {'type': 'medication', 'description': 'Take over-the-counter fever reducers if uncomfortable', 'priority': 'medium'}
         ])
-    elif 'cold' in disease_lower or 'flu' in disease_lower:
+        diet = ["Chicken soup or bone broth", "Coconut water for electrolytes", "Herbal tea with honey", "Soft fruits like bananas"]
+        workouts = ["Complete rest is recommended", "Avoid exercise until fever resolves", "Very gentle walking only if energy permits"]
+        precautions = ["Isolate to prevent spreading infection", "Monitor temperature regularly", "Wash hands frequently", "Wear a mask if around others"]
+
+    elif 'cold' in disease_lower:
         recommendations.extend([
-            {'type': 'self-care', 'description': 'Get plenty of rest and sleep', 'priority': 'high'},
-            {'type': 'self-care', 'description': 'Drink warm fluids like tea or soup', 'priority': 'medium'},
-            {'type': 'self-care', 'description': 'Use humidifier or breathe steam', 'priority': 'low'}
+            {'type': 'self-care', 'description': 'Use a humidifier to keep air moist', 'priority': 'medium'},
+            {'type': 'self-care', 'description': 'Gargle with warm salt water', 'priority': 'low'}
         ])
+        diet = ["Warm soup", "Citrus fruits (Vitamin C)", "Garlic and onions", "Hot tea with lemon"]
+        workouts = ["Light walking if symptoms are mild", "Gentle stretching", "Avoid strenuous activities"]
+        precautions = ["Cover coughs and sneezes", "Disinfect frequently touched surfaces", "Rest your voice"]
+
+    elif 'diabetes' in disease_lower:
+        diet = ["Leafy greens (spinach, kale)", "Fatty fish (salmon, mackerel)", "Whole grains (quinoa, brown rice)", "Avoid sugary drinks and processed carbs"]
+        workouts = ["Brisk walking (30 mins daily)", "Resistance/Strength training", "Swimming", "Cycling"]
+        precautions = ["Monitor blood sugar levels frequently", "Check feet for cuts or sores daily", "Stay hydrated", "Carry an emergency snack"]
+
+    else:
+        # Generic / Default Plan
+        diet = ["Balanced diet with plenty of vegetables", "Lean proteins", "Whole grains", "Stay well-hydrated"]
+        workouts = ["Moderate walking (20-30 mins)", "Gentle stretching", "Yoga for relaxation"]
+        precautions = ["Monitor symptoms closely", "Get adequate sleep", "Consult doctor if symptoms persist"]
 
     # Always add general advice
     recommendations.append({
         'type': 'disclaimer',
-        'description': '⚠️ This is AI prediction only - always consult qualified healthcare professionals',
+        'description': '⚠️ This is an AI prediction. Always consult a qualified healthcare professional for medical advice.',
         'priority': 'high'
     })
 
-    return recommendations
+    return {
+        'actions': recommendations,
+        'diet': diet,
+        'exercise': workouts,
+        'precautions': precautions
+    }
 
 # Authentication Routes
 @app.route('/api/auth/register', methods=['POST'])
@@ -698,4 +730,4 @@ def missing_token_callback(error):
     return jsonify({'error': 'Authorization token is required'}), 401
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=5000)

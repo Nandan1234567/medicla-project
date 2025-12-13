@@ -27,26 +27,28 @@
 }
 
 [data-theme="dark"] {
-  /* Dark Mode Colors */
-  --primary-color: #4caf50;
+  /* Dark Mode Colors - Deep Forest Theme */
+  --primary-color: #66bb6a;
+  /* Brighter Green for contrast */
   --primary-light: #81c784;
-  --primary-dark: #2e7d32;
+  --primary-dark: #388e3c;
   --secondary-color: #aed581;
-  --accent-color: #ffca28;
-  --background: #121f12;
-  /* Very Dark Green/Black */
-  --surface: #1e331e;
-  /* Dark Green Surface */
-  --text-primary: #e8f5e9;
-  --text-secondary: #c8e6c9;
+  --accent-color: #ffd54f;
+  --background: #0a110a;
+  /* Almost Black Green */
+  --surface: #142114;
+  /* Deep Jungle Green */
+  --text-primary: #f1f8e9;
+  /* Off-white */
+  --text-secondary: #b0bec5;
   --border-color: #2e4a2e;
-  --error: #ef5350;
-  --success: #66bb6a;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
-  --glass-bg: rgba(30, 51, 30, 0.8);
-  --glass-border: rgba(76, 175, 80, 0.2);
+  --error: #e57373;
+  --success: #81c784;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.6);
+  --glass-bg: rgba(20, 33, 20, 0.85);
+  --glass-border: rgba(102, 187, 106, 0.2);
 }
 
 * {

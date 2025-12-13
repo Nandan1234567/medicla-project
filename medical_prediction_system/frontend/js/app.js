@@ -135,7 +135,6 @@ async function handlePrediction(e) {
     e.preventDefault();
 
     const symptoms = document.getElementById('symptoms').value;
-    const age = document.getElementById('age').value;
     const severity = document.getElementById('severity').value;
     const submitBtn = document.querySelector('#predictionForm button[type="submit"]');
 
@@ -152,7 +151,7 @@ async function handlePrediction(e) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({ symptoms, age, severity })
+            body: JSON.stringify({ symptoms, severity })
         });
 
         const data = await response.json();
@@ -220,6 +219,29 @@ function displayResults(data) {
             list.appendChild(li);
         });
     }
+
+    // Helper to populate simple lists for Wellness Plan
+    const populateList = (elementId, items) => {
+        const el = document.getElementById(elementId);
+        if(!el) return; // Guard clause
+
+        el.innerHTML = '';
+        if (items && items.length > 0) {
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.style.marginBottom = '0.5rem';
+                li.textContent = item;
+                el.appendChild(li);
+            });
+        } else {
+            el.innerHTML = '<li style="list-style: none; color: var(--text-secondary); font-style: italic;">No specific recommendations available.</li>';
+        }
+    };
+
+    // Populate Wellness Plan Sections
+    populateList('dietList', data.dietPlan);
+    populateList('exerciseList', data.exercisePlan);
+    populateList('precautionsList', data.precautions);
 }
 
 function resetDashboard() {

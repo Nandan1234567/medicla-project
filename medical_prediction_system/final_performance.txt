@@ -1,0 +1,18 @@
+================================================================================
+FINAL MODEL PERFORMANCE SUMMARY
+================================================================================
+
+Best Model: Naive Bayes
+
+Performance Metrics:
+  - Accuracy: 0.8586
+  - F1-Score: 0.8467
+  - Recall: 0.8586
+
+Dataset Information:
+  - Total Diseases: 244
+  - Training Samples: 104,300
+  - Test Samples: 26,076
+  - Feature Dimension: 500
+
+================================================================================

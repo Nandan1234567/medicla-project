@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Healthcare Recommendations</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-leaf"></i>
+                <h1>Medical Healthcare Recommendations</h1>
+            </div>
+            <p class="tagline">AI-Powered Disease Prediction & Health Guidance</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Input Form -->
+            <section class="input-section card">
+                <h2>
+                    <i class="fas fa-notes-medical"></i>
+                    Enter Your Health Information
+                </h2>
+                
+                <form id="healthForm">
+                    <!-- Symptoms Input -->
+                    <div class="form-group">
+                        <label for="symptoms">
+                            <i class="fas fa-stethoscope"></i>
+                            Describe Your Symptoms
+                        </label>
+                        <textarea 
+                            id="symptoms" 
+                            name="symptoms" 
+                            rows="4" 
+                            placeholder="E.g., I have fever, headache, and body ache for 2 days..."
+                            required
+                        ></textarea>
+                        <small class="form-hint">Be as detailed as possible for accurate predictions</small>
+                    </div>
+
+                    <!-- Age Selection -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="age">
+                                <i class="fas fa-birthday-cake"></i>
+                                Age Group
+                            </label>
+                            <select id="age" name="age" required>
+                                <option value="">Select age group</option>
+                                <option value="below 5 years">Below 5 years</option>
+                                <option value="6-15 years">6-15 years</option>
+                                <option value="16-30 years">16-30 years</option>
+                                <option value="31-45 years">31-45 years</option>
+                                <option value="above 45 years">Above 45 years</option>
+                            </select>
+                        </div>
+
+                        <!-- Gender Selection -->
+                        <div class="form-group">
+                            <label for="gender">
+                                <i class="fas fa-venus-mars"></i>
+                                Gender
+                            </label>
+                            <select id="gender" name="gender" required>
+                                <option value="">Select gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Duration Selection -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="duration">
+                                <i class="fas fa-clock"></i>
+                                Duration
+                            </label>
+                            <select id="duration" name="duration" required>
+                                <option value="">How long have you had these symptoms?</option>
+                                <option value="Less than 3 days">Less than 3 days</option>
+                                <option value="3-7 days">3-7 days</option>
+                                <option value="Greater than 3 days">Greater than 3 days</option>
+                                <option value="1-2 weeks">1-2 weeks</option>
+                                <option value="More than 2 weeks">More than 2 weeks</option>
+                            </select>
+                        </div>
+
+                        <!-- Severity Selection -->
+                        <div class="form-group">
+                            <label for="severity">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Severity
+                            </label>
+                            <select id="severity" name="severity" required>
+                                <option value="">Rate the severity</option>
+                                <option value="Mild">Mild</option>
+                                <option value="Moderate">Moderate</option>
+                                <option value="Severe">Severe</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary" id="predictBtn">
+                        <i class="fas fa-search"></i>
+                        Get Health Recommendations
+                    </button>
+                </form>
+            </section>
+
+            <!-- Loading State -->
+            <section class="loading-section" id="loadingSection" style="display: none;">
+                <div class="loader">
+                    <div class="leaf-loader">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <p>Analyzing your symptoms...</p>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <!-- Prediction Result -->
+                <div class="card result-card">
+                    <h2>
+                        <i class="fas fa-diagnoses"></i>
+                        Diagnosis Prediction
+                    </h2>
+                    <div class="prediction-result">
+                        <div class="disease-name" id="diseaseName"></div>
+                        <div class="confidence-bar">
+                            <label>Confidence Level:</label>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="confidenceBar"></div>
+                            </div>
+                            <span class="confidence-value" id="confidenceValue"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medical Recommendations -->
+                <div class="card recommendations-card">
+                    <h2>
+                        <i class="fas fa-clipboard-list"></i>
+                        Medical Recommendations
+                    </h2>
+                    <div id="recommendationsList" class="recommendations-list"></div>
+                </div>
+
+                <!-- Precautions -->
+                <div class="card precautions-card">
+                    <h2>
+                        <i class="fas fa-shield-alt"></i>
+                        Precautions & Care
+                    </h2>
+                    <div id="precautionsList" class="precautions-list"></div>
+                </div>
+
+                <!-- Disclaimer -->
+                <div class="disclaimer">
+                    <i class="fas fa-info-circle"></i>
+                    <p><strong>Medical Disclaimer:</strong> This AI prediction is for informational purposes only and should not replace professional medical advice. Please consult a qualified healthcare provider for proper diagnosis and treatment.</p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="newPredictionBtn">
+                        <i class="fas fa-redo"></i>
+                        New Prediction
+                    </button>
+                    <button class="btn btn-outline" id="printBtn">
+                        <i class="fas fa-print"></i>
+                        Print Results
+                    </button>
+                </div>
+            </section>
+
+            <!-- Error Section -->
+            <section class="error-section card" id="errorSection" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i>
+                <h3>Connection Error</h3>
+                <p id="errorMessage"></p>
+                <button class="btn btn-primary" id="retryBtn">
+                    <i class="fas fa-sync"></i>
+                    Try Again
+                </button>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2024 Medical Healthcare Recommendations. Powered by AI Machine Learning.</p>
+            <p class="footer-note">Accuracy: 85.86% | 244 Diseases Supported</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

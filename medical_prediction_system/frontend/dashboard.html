@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - Health Care Recommender</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link rel="stylesheet" href="css/styles.css">
   <script>
     // Check auth locally before rendering to avoid flash
@@ -105,6 +106,10 @@
               id="urgencyBadge">Moderate</span>
             <h2 style="margin-top: 0.5rem; font-size: 2rem;" id="diseaseName">Common Cold</h2>
             <p id="doctorMessage" style="color: var(--text-secondary); margin-top: 0.5rem; font-style: italic;"></p>
+            <div id="riskWarning"
+              style="margin-top: 0.5rem; display: none; padding: 0.5rem; background: rgba(255,0,0,0.1); border-left: 3px solid red; color: red; font-weight: bold;">
+              ⚠ Seek immediate medical attention if symptoms worsen.
+            </div>
           </div>
           <div style="text-align: right;">
             <div style="font-size: 2rem; font-weight: 700; color: var(--primary-color);"><span
@@ -115,6 +120,45 @@
 
         <div class="confidence-bar">
           <div class="confidence-fill" id="confidenceBar" style="width: 0%;"></div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
+          <button onclick="downloadPDF()" class="btn btn-primary"
+            style="padding: 0.5rem 1rem; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.2rem;">📄</span> Download Report
+          </button>
+          <button onclick="resetDashboard()" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+            New Prediction
+          </button>
+        </div>
+
+        <!-- Disease Information -->
+        <div id="diseaseInfoSection"
+          style="display: none; margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, rgba(76,175,80,0.1), rgba(139,195,74,0.1)); border-radius: 0.75rem; border-left: 4px solid var(--primary-color);">
+          <h4 style="color: var(--primary-dark); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.5rem;">📖</span> About This Condition
+          </h4>
+
+          <div style="margin-bottom: 1rem;">
+            <strong style="color: var(--primary-dark);">What is it?</strong>
+            <p id="diseaseDescription" style="margin: 0.5rem 0 0 0; color: var(--text-primary); line-height: 1.6;"></p>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <strong style="color: var(--primary-dark);">Common Causes:</strong>
+            <p id="diseaseCauses" style="margin: 0.5rem 0 0 0; color: var(--text-secondary); line-height: 1.6;"></p>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <strong style="color: var(--primary-dark);">Typical Symptoms:</strong>
+            <p id="diseaseSymptoms" style="margin: 0.5rem 0 0 0; color: var(--text-secondary); line-height: 1.6;"></p>
+          </div>
+
+          <div>
+            <strong style="color: var(--primary-dark);">Treatment:</strong>
+            <p id="diseaseTreatment" style="margin: 0.5rem 0 0 0; color: var(--text-secondary); line-height: 1.6;"></p>
+          </div>
         </div>
 
         <h4 style="margin-top: 2rem;">Recommended Actions</h4>
@@ -170,7 +214,7 @@
       </div>
 
       <div style="margin-top: 2rem; text-align: center;">
-        <button onclick="resetDashboard()" class="btn btn-secondary">New Prediction</button>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Scroll up for full details</p>
       </div>
     </div>
   </div>

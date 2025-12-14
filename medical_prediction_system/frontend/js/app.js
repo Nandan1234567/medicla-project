@@ -182,28 +182,29 @@ function displayResults(data) {
     document.getElementById('confidenceBar').style.width = `${data.result.confidence}%`;
 
     // Urgency & Doctor Message
+    // Urgency & Risk Tag Logic
     const urgencyBadge = document.getElementById('urgencyBadge');
-    urgencyBadge.textContent = data.result.urgencyLevel || 'Moderate';
-
-    const doctorMsgEl = document.getElementById('doctorMessage');
-    if(doctorMsgEl) doctorMsgEl.textContent = data.doctorConsultationMessage || '';
-
-    // Emergency Handling
-    const emergencyWarning = document.getElementById('emergencyWarning');
+    const riskWarning = document.getElementById('riskWarning');
     const diseaseTitle = document.getElementById('diseaseName');
+    const urgencyLevel = data.result.urgencyLevel || 'MODERATE';
 
-    if (data.isEmergency) {
-        emergencyWarning.style.display = 'block';
-        urgencyBadge.style.background = 'var(--error)';
-        diseaseTitle.style.color = 'var(--error)'; // Make disease name red
-        if(doctorMsgEl) doctorMsgEl.style.color = 'var(--error)';
-        if(doctorMsgEl) doctorMsgEl.style.fontWeight = 'bold';
-    } else {
-        emergencyWarning.style.display = 'none';
-        urgencyBadge.style.background = 'var(--primary-light)';
+    urgencyBadge.textContent = urgencyLevel;
+
+    // Reset styles
+    riskWarning.style.display = 'none';
+
+    if (urgencyLevel === 'EMERGENCY' || urgencyLevel === 'CRITICAL') {
+        urgencyBadge.style.background = 'var(--error)'; // Red
+        diseaseTitle.style.color = 'var(--error)';
+        riskWarning.style.display = 'block';
+        if(riskWarning) riskWarning.textContent = "⚠ Seek immediate medical attention if symptoms worsen or you experience difficulty breathing, chest pain, or loss of consciousness.";
+    } else if (urgencyLevel === 'MODERATE') {
+        urgencyBadge.style.background = '#f1c40f'; // Yellow/Orange
+        urgencyBadge.style.color = '#000';
         diseaseTitle.style.color = 'var(--text-primary)';
-        if(doctorMsgEl) doctorMsgEl.style.color = 'var(--text-secondary)';
-        if(doctorMsgEl) doctorMsgEl.style.fontWeight = 'normal';
+    } else { // MILD
+        urgencyBadge.style.background = '#2ecc71'; // Green
+        diseaseTitle.style.color = 'var(--text-primary)';
     }
 
     // Recommendations
@@ -399,6 +400,115 @@ async function loadProfile() {
     } catch (err) {
         console.error('Profile Error:', err);
         profileInfo.innerHTML = '<p style="text-align: center; color: var(--error);">Failed to load profile. Please try again.</p>';
+    }
+}
+
+// --- Enhanced Download PDF Report ---
+function downloadPDF() {
+    try {
+        if (!window.jspdf) {
+            alert("PDF Library not loaded. Please refresh.");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // --- 1. Header ---
+        doc.setFillColor(76, 175, 80); // Green Header
+        doc.rect(0, 0, 210, 40, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(24);
+        doc.text("Medical Health Report", 105, 25, { align: 'center' });
+
+        let y = 50;
+        doc.setTextColor(0, 0, 0);
+
+        // --- 2. User Details & Metadata ---
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : { name: 'Guest', email: 'N/A' };
+        const date = new Date().toLocaleString();
+
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Report Date: ${date}`, 160, 45);
+
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Patient Name: ${user.name}`, 20, y);
+        y += 7;
+        doc.text(`Email: ${user.email}`, 20, y);
+        y += 15;
+
+        // --- 3. Symptoms ---
+        const symptoms = document.getElementById('symptoms').value || "Not recorded";
+        doc.setFontSize(14);
+        doc.setTextColor(76, 175, 80);
+        doc.text("Symptoms Reported", 20, y);
+        y += 7;
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(symptoms, 20, y);
+        y += 15;
+
+        // --- 4. Diagnosis & Severity ---
+        const disease = document.getElementById('diseaseName').textContent;
+        const confidence = document.getElementById('confidenceValue').textContent;
+        const urgency = document.getElementById('urgencyBadge').textContent;
+
+        doc.setFontSize(14);
+        doc.setTextColor(76, 175, 80);
+        doc.text("Diagnosis Results", 20, y);
+        y += 10;
+
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Predicted Disease: ${disease}`, 20, y);
+        y += 7;
+        doc.text(`Confidence Score: ${confidence}%`, 20, y);
+        y += 7;
+
+        // Severity Color in PDF
+        if(urgency === 'EMERGENCY') doc.setTextColor(255, 0, 0);
+        else if(urgency === 'MODERATE') doc.setTextColor(255, 165, 0);
+        else doc.setTextColor(0, 128, 0);
+
+        doc.text(`Severity Level: ${urgency}`, 20, y);
+        doc.setTextColor(0, 0, 0); // Reset
+        y += 15;
+
+        // --- 5. Recommendations ---
+        doc.setFontSize(14);
+        doc.setTextColor(76, 175, 80);
+        doc.text("Recommendations", 20, y);
+        y += 10;
+
+        doc.setFontSize(11);
+        const recList = document.querySelectorAll('#recommendationsList li div p'); // Grab text from P tags
+        if(recList.length > 0) {
+            recList.forEach(p => {
+                 const text = "- " + p.textContent;
+                 const lines = doc.splitTextToSize(text, 170);
+                 doc.text(lines, 20, y);
+                 y += (lines.length * 6) + 2;
+            });
+        } else {
+             doc.text("No specific recommendations generated.", 20, y);
+        }
+
+        // Footer Warning
+        y = 280;
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text("Disclaimer: This is an AI-generated prediction. Not a substitute for professional medical advice.", 105, y, { align: 'center' });
+
+        // Save
+        doc.save(`Health_Report_${user.name.replace(/\s+/g,'_')}.pdf`);
+
+    } catch (e) {
+        console.error(e);
+        alert("PDF Error: " + e.message);
     }
 }
 

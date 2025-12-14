@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Generation Test</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+  <h1>Testing PDF Library</h1>
+  <button onclick="testPDF()">Generate Test PDF</button>
+
+  <script>
+    function testPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("Hello PDF!", 10, 10);
+      doc.save("test.pdf");
+      console.log("PDF generated!");
+    }
+  </script>
+</body>
+
+</html>

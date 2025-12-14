@@ -91,6 +91,112 @@ except Exception as e:
     logger.error(f"Failed to load ML predictor: {e}")
     ml_predictor = None
 
+def get_disease_description(disease_name):
+    """
+    Get detailed description of the disease
+    Returns: dict with description, causes, symptoms, treatment info
+    """
+    descriptions = {
+        'common cold': {
+            'description': 'A viral infection of the upper respiratory tract (nose and throat). Usually harmless but uncomfortable.',
+            'causes': 'Caused by viruses (rhinovirus most common). Spreads through airborne droplets and contact.',
+            'symptoms': 'Runny/stuffy nose, sneezing, sore throat, cough, mild headache, fatigue',
+            'treatment': 'Rest, fluids, over-the-counter cold medicines. Usually resolves in 7-10 days.'
+        },
+        'viral fever': {
+            'description': 'Fever caused by viral infection. Body temperature rises to fight off the virus.',
+            'causes': 'Various viruses including flu, dengue, or common cold viruses.',
+            'symptoms': 'High temperature (>100.4°F), body aches, weakness, headache, chills',
+            'treatment': 'Rest, plenty of fluids, fever reducers (acetaminophen/ibuprofen). See doctor if fever >3 days.'
+        },
+        'pneumonia': {
+            'description': 'Lung infection causing inflammation of air sacs, which may fill with fluid or pus.',
+            'causes': 'Bacteria, viruses, or fungi. Can be acquired in community or hospital.',
+            'symptoms': 'Chest pain, cough with phlegm, fever, chills, difficulty breathing, fatigue',
+            'treatment': 'IMPORTANT: See a doctor. Requires antibiotics for bacterial pneumonia. May need hospitalization.'
+        },
+        'malaria': {
+            'description': 'Parasitic disease transmitted by infected mosquitoes. Common in tropical regions.',
+            'causes': 'Plasmodium parasite transmitted through Anopheles mosquito bites.',
+            'symptoms': 'High fever, chills, sweating, headache, nausea, vomiting, muscle pain',
+            'treatment': 'URGENT: Requires immediate medical treatment with antimalarial drugs. Can be life-threatening.'
+        },
+        'dengue': {
+            'description': 'Mosquito-borne viral disease common in tropical and subtropical areas.',
+            'causes': 'Dengue virus transmitted by Aedes mosquitoes.',
+            'symptoms': 'High fever, severe headache, pain behind eyes, joint/muscle pain, rash, mild bleeding',
+            'treatment': 'No specific cure. Rest, fluids, pain relievers (avoid aspirin). See doctor immediately.'
+        },
+        'migraine': {
+            'description': 'Neurological condition causing intense, throbbing headaches, often on one side of head.',
+            'causes': 'Various triggers: stress, certain foods, hormonal changes, lack of sleep, bright lights.',
+            'symptoms': 'Severe headache, nausea, vomiting, sensitivity to light/sound, visual disturbances (aura)',
+            'treatment': 'Pain relievers, rest in dark quiet room, preventive medications for chronic cases.'
+        },
+        'diabetes': {
+            'description': 'Chronic condition affecting how your body processes blood sugar (glucose).',
+            'causes': 'Type 1: Autoimmune. Type 2: Insulin resistance, often related to lifestyle/genetics.',
+            'symptoms': 'Increased thirst/hunger, frequent urination, fatigue, blurred vision, slow healing wounds',
+            'treatment': 'CHRONIC: Requires ongoing management. Diet, exercise, blood sugar monitoring, medications/insulin.'
+        },
+        'hypertension': {
+            'description': 'High blood pressure - force of blood against artery walls is too high.',
+            'causes': 'Often no single cause. Risk factors: age, genetics, obesity, high salt intake, stress.',
+            'symptoms': 'Often no symptoms ("silent killer"). May cause headaches, shortness of breath, nosebleeds.',
+            'treatment': 'Lifestyle changes (diet, exercise, reduce salt/stress), blood pressure medications if needed.'
+        },
+        'typhoid': {
+            'description': 'Bacterial infection causing high fever and gastrointestinal symptoms.',
+            'causes': 'Salmonella typhi bacteria, spread through contaminated food or water.',
+            'symptoms': 'Sustained high fever, weakness, stomach pain, headache, loss of appetite, rash',
+            'treatment': 'IMPORTANT: Requires antibiotics. See doctor for proper diagnosis and treatment.'
+        },
+        'jaundice': {
+            'description': 'Yellowing of skin and eyes due to high bilirubin levels in blood.',
+            'causes': 'Liver problems, bile duct blockage, certain blood disorders, or hepatitis.',
+            'symptoms': 'Yellow skin/eyes, dark urine, pale stools, itching, fatigue, abdominal pain',
+            'treatment': 'Treat underlying cause. See doctor for diagnosis. May need liver function tests.'
+        },
+        'chicken pox': {
+            'description': 'Highly contagious viral infection causing itchy rash with fluid-filled blisters.',
+            'causes': 'Varicella-zoster virus. Spreads easily through air and contact.',
+            'symptoms': 'Itchy rash (starts as red bumps, becomes blisters), fever, tiredness, loss of appetite',
+            'treatment': 'Usually mild. Anti-itch lotions, fever reducers, rest. Vaccine available for prevention.'
+        },
+        'fungal infection': {
+            'description': 'Skin infection caused by fungi, affecting skin, nails, or scalp.',
+            'causes': 'Various fungi. Thrives in warm, moist environments. Can spread through contact.',
+            'symptoms': 'Itchy, red, scaly patches, ring-shaped rash, cracked skin, nail discoloration',
+            'treatment': 'Antifungal creams/powders for minor cases. Oral medications for severe/persistent infections.'
+        },
+        'arthritis': {
+            'description': 'Joint inflammation causing pain and stiffness. Many types (osteoarthritis, rheumatoid, etc.)',
+            'causes': 'Varies by type: wear and tear (osteo), autoimmune (rheumatoid), genetics.',
+            'symptoms': 'Joint pain, stiffness (worse in morning), swelling, reduced range of motion',
+            'treatment': 'Pain relievers, anti-inflammatory drugs, physical therapy, exercise, heat/cold therapy.'
+        }
+    }
+
+    # Try to find exact match or partial match
+    disease_lower = disease_name.lower()
+
+    # Exact match
+    if disease_lower in descriptions:
+        return descriptions[disease_lower]
+
+    # Partial match
+    for key, value in descriptions.items():
+        if key in disease_lower or disease_lower in key:
+            return value
+
+    # Default for unknown diseases
+    return {
+        'description': f'{disease_name} is a medical condition that requires professional evaluation.',
+        'causes': 'Specific causes vary. Consult a healthcare provider for detailed information.',
+        'symptoms': 'Symptoms depend on the specific condition and individual factors.',
+        'treatment': 'Please consult a qualified medical professional for proper diagnosis and treatment plan.'
+    }
+
 def predict_disease(symptoms):
     """
     Call the Linear SVM predictor with symptoms using direct import
@@ -159,8 +265,9 @@ def predict_disease(symptoms):
                 'disease': result.get('disease', 'Unknown'),
                 'confidence': result.get('confidence', 0),
                 'model': 'LinearSVM',
-                'urgencyLevel': 'CRITICAL' if is_emergency else result.get('urgency', 'MODERATE')
+                'urgencyLevel': 'EMERGENCY' if is_emergency else ('MILD' if result.get('confidence', 0) < 60 else 'MODERATE')
             },
+            'severity': 'Emergency' if is_emergency else ('Mild' if result.get('confidence', 0) < 60 else 'Moderate'),
             'predictedDiagnosis': result.get('disease', 'Unknown'),
             'confidenceScore': result.get('confidence', 0),
             'emergencyFlag': is_emergency,
@@ -171,7 +278,8 @@ def predict_disease(symptoms):
             'dietPlan': rec_data['diet'],
             'exercisePlan': rec_data['exercise'],
             'isEmergency': is_emergency,
-            'emergencyKeywords': [kw for kw in safety_rules.keys() if kw in symptoms_lower] if is_emergency else []
+            'emergencyKeywords': [kw for kw in safety_rules.keys() if kw in symptoms_lower] if is_emergency else [],
+            'diseaseInfo': get_disease_description(result.get('disease', 'Unknown'))
         }
 
     except Exception as e:
@@ -764,4 +872,4 @@ def missing_token_callback(error):
     return jsonify({'error': 'Authorization token is required'}), 401
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)

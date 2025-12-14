@@ -25,8 +25,8 @@ app.config['SECRET_KEY'] = 'medical_healthcare_super_secret_key_2024'
 app.config['JWT_SECRET_KEY'] = 'jwt_medical_secret_key_2024'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=7)
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/medical_healthcare'
-app.config['GITHUB_CLIENT_ID'] = os.getenv('GITHUB_CLIENT_ID', 'REPLACE_WITH_YOUR_ID')
-app.config['GITHUB_CLIENT_SECRET'] = os.getenv('GITHUB_CLIENT_SECRET', 'REPLACE_WITH_YOUR_SECRET')
+app.config['GITHUB_CLIENT_ID'] = 'Ov23lirz0U8ygpsWMKg8'
+app.config['GITHUB_CLIENT_SECRET'] = '7d3a6845aafb376749677d5e716ea023040bddd8'
 
 # --- GitHub Auth Setup ---
 try:
@@ -43,10 +43,13 @@ try:
         api_base_url='https://api.github.com/',
         client_kwargs={'scope': 'user:email'},
     )
-except ImportError:
+    print("GitHub Auth Initialized Successfully")
+except Exception as e:
     oauth = None
     github = None
-    print("WARNING: Authlib not installed. GitHub login disabled.")
+    print(f"WARNING: GitHub Auth Init Failed: {e}")
+    import traceback
+    traceback.print_exc()
 
 # Configure logging FIRST
 logging.basicConfig(level=logging.INFO)
@@ -898,7 +901,7 @@ def missing_token_callback(error):
 def github_login():
     if not github:
         return jsonify({'error': 'GitHub Auth not enabled. Please install authlib and configure credentials.'}), 501
-    redirect_uri = url_for('github_authorize', _external=True)
+    redirect_uri = 'http://localhost:5000/auth/github/callback'
     return github.authorize_redirect(redirect_uri)
 
 @app.route('/auth/github/callback')
@@ -947,6 +950,15 @@ def github_authorize():
         logger.error(f"GitHub Auth Error: {str(e)}")
         # For demo purposes, if it fails (e.g. no internet/bad creds), redirect to login with error
         return redirect('/login.html?error=GitHub_Login_Failed')
+
+@app.route('/auth/debug')
+def auth_debug():
+    return jsonify({
+        'github_obj': str(github) if github else "None",
+        'client_id_length': len(app.config.get('GITHUB_CLIENT_ID', '')),
+        'secret_length': len(app.config.get('GITHUB_CLIENT_SECRET', '')),
+        'authlib_version': authlib.__version__ if 'authlib' in globals() else "Unknown"
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

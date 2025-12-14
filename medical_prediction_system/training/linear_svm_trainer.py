@@ -66,13 +66,13 @@ class LinearSVMTrainer:
             # Load dataset
             df = pd.read_csv(file_path)
             original_size = len(df)
-            print(f"✓ Dataset loaded: {original_size:,} rows")
+            print(f"Dataset loaded: {original_size:,} rows")
 
             # Sample for memory efficiency if needed
             if len(df) > sample_size:
-                print(f"⚠️ Sampling {sample_size:,} rows for optimal performance...")
+                print(f"Sampling {sample_size:,} rows for optimal performance...")
                 df = df.sample(n=sample_size, random_state=42)
-                print(f"✓ Sampled dataset: {len(df):,} rows")
+                print(f"Sampled dataset: {len(df):,} rows")
 
             # Data cleaning
             df = df.drop_duplicates()
@@ -91,8 +91,8 @@ class LinearSVMTrainer:
             df = df[df['Symptoms'].str.len() > 5]
             df = df.reset_index(drop=True)
 
-            print(f"✓ Cleaned dataset: {len(df):,} rows")
-            print(f"✓ Unique diseases: {df['Final Recommendation'].nunique()}")
+            print(f"Cleaned dataset: {len(df):,} rows")
+            print(f"Unique diseases: {df['Final Recommendation'].nunique()}")
 
             # Memory cleanup
             gc.collect()
@@ -100,7 +100,7 @@ class LinearSVMTrainer:
             return df
 
         except Exception as e:
-            print(f"❌ Error loading data: {e}")
+            print(f"Error loading data: {e}")
             return None
 
     def create_svm_features(self, X_train_text, X_test_text):
@@ -121,12 +121,12 @@ class LinearSVMTrainer:
             norm='l2'              # L2 normalization for SVM
         )
 
-        print(f"✓ Creating SVM-optimized TF-IDF features...")
+        print(f"Creating SVM-optimized TF-IDF features...")
         X_train_tfidf = self.vectorizer.fit_transform(X_train_text)
         X_test_tfidf = self.vectorizer.transform(X_test_text)
 
-        print(f"✓ Feature matrix: {X_train_tfidf.shape}")
-        print(f"✓ Feature density: {X_train_tfidf.nnz / (X_train_tfidf.shape[0] * X_train_tfidf.shape[1]):.4f}")
+        print(f"Feature matrix: {X_train_tfidf.shape}")
+        print(f"Feature density: {X_train_tfidf.nnz / (X_train_tfidf.shape[0] * X_train_tfidf.shape[1]):.4f}")
 
         # Memory cleanup
         gc.collect()
@@ -154,7 +154,7 @@ class LinearSVMTrainer:
             max_iter=1000             # Maximum iterations
         )
 
-        print(f"🔄 Training Linear SVM...")
+        print(f"Training Linear SVM...")
         start_time = time.time()
 
         # Train the model
@@ -169,16 +169,16 @@ class LinearSVMTrainer:
         recall = recall_score(y_test, y_pred, average='weighted')
         training_time = time.time() - start_time
 
-        print(f"✅ Training completed!")
-        print(f"   🎯 Accuracy: {accuracy:.4f} ({accuracy*100:.2f}%)")
-        print(f"   🎯 F1-Score: {f1:.4f} ({f1*100:.2f}%)")
-        print(f"   🎯 Recall: {recall:.4f} ({recall*100:.2f}%)")
-        print(f"   ⏱️ Training Time: {training_time:.2f}s")
+        print(f"Training completed!")
+        print(f"   Accuracy: {accuracy:.4f} ({accuracy*100:.2f}%)")
+        print(f"   F1-Score: {f1:.4f} ({f1*100:.2f}%)")
+        print(f"   Recall: {recall:.4f} ({recall*100:.2f}%)")
+        print(f"   Training Time: {training_time:.2f}s")
 
         # Cross-validation for robustness check
-        print(f"\n🔄 Cross-validation (5-fold)...")
+        print(f"\nCross-validation (5-fold)...")
         cv_scores = cross_val_score(self.model, X_train, y_train, cv=5, scoring='f1_weighted')
-        print(f"   📊 CV F1-Score: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
+        print(f"   CV F1-Score: {cv_scores.mean():.4f} +/- {cv_scores.std():.4f}")
 
         return {
             'accuracy': accuracy,
@@ -196,7 +196,7 @@ class LinearSVMTrainer:
         print("="*60)
 
         # Classification report for top diseases
-        print(f"\n📊 Classification Report (Top 15 Diseases):")
+        print(f"\nClassification Report (Top 15 Diseases):")
         print("-" * 60)
 
         # Get top diseases by frequency
@@ -219,11 +219,11 @@ class LinearSVMTrainer:
             print(report)
 
             # Save detailed report
-            with open(os.path.join(self.output_dir, 'linear_svm_classification_report.txt'), 'w') as f:
+            with open(os.path.join(self.output_dir, 'linear_svm_classification_report.txt'), 'w', encoding='utf-8') as f:
                 f.write("LINEAR SVM CLASSIFICATION REPORT\n")
                 f.write("="*80 + "\n\n")
                 f.write(report)
-            print(f"✓ Detailed report saved: {self.output_dir}/linear_svm_classification_report.txt")
+            print(f"Detailed report saved: {self.output_dir}/linear_svm_classification_report.txt")
 
         # Confusion matrix visualization
         try:
@@ -246,10 +246,10 @@ class LinearSVMTrainer:
             cm_path = os.path.join(self.output_dir, 'linear_svm_confusion_matrix.png')
             plt.savefig(cm_path, dpi=150, bbox_inches='tight')
             plt.close()
-            print(f"✓ Confusion matrix saved: {cm_path}")
+            print(f"Confusion matrix saved: {cm_path}")
 
         except Exception as e:
-            print(f"⚠️ Could not create confusion matrix: {e}")
+            print(f"Could not create confusion matrix: {e}")
 
     def save_model(self, performance_metrics):
         """Save Linear SVM model and artifacts"""
@@ -264,15 +264,15 @@ class LinearSVMTrainer:
 
         with open(model_path, 'wb') as f:
             pickle.dump(self.model, f)
-        print(f"✓ {model_path}")
+        print(f"{model_path}")
 
         with open(vectorizer_path, 'wb') as f:
             pickle.dump(self.vectorizer, f)
-        print(f"✓ {vectorizer_path}")
+        print(f"{vectorizer_path}")
 
         with open(encoder_path, 'wb') as f:
             pickle.dump(self.label_encoder, f)
-        print(f"✓ {encoder_path}")
+        print(f"{encoder_path}")
 
         # Save performance summary
         summary = f"""
@@ -290,7 +290,7 @@ Performance Metrics:
   - Training Time: {performance_metrics['training_time']:.2f} seconds
 
 Cross-Validation:
-  - CV F1-Score: {performance_metrics['cv_scores'].mean():.4f} ± {performance_metrics['cv_scores'].std():.4f}
+  - CV F1-Score: {performance_metrics['cv_scores'].mean():.4f} +/- {performance_metrics['cv_scores'].std():.4f}
   - CV Scores: {[f'{score:.4f}' for score in performance_metrics['cv_scores']]}
 
 Model Configuration:
@@ -308,26 +308,26 @@ Feature Engineering:
   - Normalization: L2
   - Sublinear TF: True
 
-Production Ready: ✅
-Memory Optimized: ✅
-High Performance: ✅
+Production Ready: Yes
+Memory Optimized: Yes
+High Performance: Yes
 
 ================================================================================
 """
 
         performance_path = os.path.join(self.output_dir, 'linear_svm_performance.txt')
-        with open(performance_path, 'w') as f:
+        with open(performance_path, 'w', encoding='utf-8') as f:
             f.write(summary)
-        print(f"✓ {performance_path}")
+        print(f"{performance_path}")
 
         return True
 
     def train_complete_pipeline(self, data_path):
         """Complete Linear SVM training pipeline"""
-        print(f"\n🚀 Starting Linear SVM Training Pipeline")
-        print(f"📊 Data: {data_path}")
-        print(f"📁 Output: {self.output_dir}")
-        print(f"⏰ Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"\nStarting Linear SVM Training Pipeline")
+        print(f"Data: {data_path}")
+        print(f"Output: {self.output_dir}")
+        print(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
         # Step 1: Load and prepare data
         df = self.load_and_prepare_data(data_path)
@@ -339,17 +339,17 @@ High Performance: ✅
         y = df['Final Recommendation'].values
 
         # Encode labels
-        print(f"\n📝 Encoding disease labels...")
+        print(f"\nEncoding disease labels...")
         self.label_encoder = LabelEncoder()
         y_encoded = self.label_encoder.fit_transform(y)
-        print(f"✓ {len(self.label_encoder.classes_)} disease classes encoded")
+        print(f"{len(self.label_encoder.classes_)} disease classes encoded")
 
         # Train-test split
-        print(f"\n✂️ Splitting data (80-20 stratified)...")
+        print(f"\nSplitting data (80-20 stratified)...")
         X_train_text, X_test_text, y_train, y_test = train_test_split(
             X, y_encoded, test_size=0.2, random_state=42, stratify=y_encoded
         )
-        print(f"✓ Train: {len(X_train_text):,}, Test: {len(X_test_text):,}")
+        print(f"Train: {len(X_train_text):,}, Test: {len(X_test_text):,}")
 
         # Step 2: Feature engineering
         X_train, X_test = self.create_svm_features(X_train_text, X_test_text)
@@ -364,11 +364,11 @@ High Performance: ✅
         self.save_model(performance_metrics)
 
         print(f"\n{'='*60}")
-        print("✅ LINEAR SVM TRAINING COMPLETE!")
+        print("LINEAR SVM TRAINING COMPLETE!")
         print("="*60)
-        print(f"🎯 Final Accuracy: {performance_metrics['accuracy']*100:.2f}%")
-        print(f"🎯 Final F1-Score: {performance_metrics['f1_score']*100:.2f}%")
-        print(f"⏰ Completed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"Final Accuracy: {performance_metrics['accuracy']*100:.2f}%")
+        print(f"Final F1-Score: {performance_metrics['f1_score']*100:.2f}%")
+        print(f"Completed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
         return True
 
@@ -376,13 +376,16 @@ def main():
     """Main training execution"""
 
     # Check for data file
-    data_file = '../cleaned_dataset.csv'
+    data_file = '../data/final_cleaned_dataset.csv'
     if not os.path.exists(data_file):
-        data_file = 'cleaned_dataset.csv'
+        data_file = 'data/final_cleaned_dataset.csv'
         if not os.path.exists(data_file):
-            print(f"❌ Data file not found: cleaned_dataset.csv")
-            print("Please ensure the dataset is available.")
-            return
+            # Fallback to check relative to current dir
+            data_file = '../data/final_cleaned_dataset.csv'
+            if not os.path.exists(data_file):
+                print(f"Data file not found: final_cleaned_dataset.csv")
+                print("Please ensure the dataset is available.")
+                return
 
     # Initialize Linear SVM trainer
     trainer = LinearSVMTrainer(output_dir='../models')
@@ -391,8 +394,8 @@ def main():
     success = trainer.train_complete_pipeline(data_file)
 
     if success:
-        print(f"\n🎉 SUCCESS! Linear SVM model ready for production.")
-        print(f"📁 Model files saved in: models/")
+        print(f"\nSUCCESS! Linear SVM model ready for production.")
+        print(f"Model files saved in: models/")
         print(f"   - linear_svm_model.pkl")
         print(f"   - linear_svm_vectorizer.pkl")
         print(f"   - linear_svm_encoder.pkl")
@@ -400,7 +403,7 @@ def main():
         print(f"   - linear_svm_classification_report.txt")
         print(f"   - linear_svm_confusion_matrix.png")
     else:
-        print(f"\n❌ Training failed.")
+        print(f"\nTraining failed.")
 
 if __name__ == "__main__":
     main()

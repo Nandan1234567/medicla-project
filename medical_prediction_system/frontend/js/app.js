@@ -181,18 +181,29 @@ function displayResults(data) {
     document.getElementById('confidenceValue').textContent = Math.round(data.result.confidence);
     document.getElementById('confidenceBar').style.width = `${data.result.confidence}%`;
 
-    // Urgency
+    // Urgency & Doctor Message
     const urgencyBadge = document.getElementById('urgencyBadge');
     urgencyBadge.textContent = data.result.urgencyLevel || 'Moderate';
 
+    const doctorMsgEl = document.getElementById('doctorMessage');
+    if(doctorMsgEl) doctorMsgEl.textContent = data.doctorConsultationMessage || '';
+
     // Emergency Handling
     const emergencyWarning = document.getElementById('emergencyWarning');
+    const diseaseTitle = document.getElementById('diseaseName');
+
     if (data.isEmergency) {
         emergencyWarning.style.display = 'block';
         urgencyBadge.style.background = 'var(--error)';
+        diseaseTitle.style.color = 'var(--error)'; // Make disease name red
+        if(doctorMsgEl) doctorMsgEl.style.color = 'var(--error)';
+        if(doctorMsgEl) doctorMsgEl.style.fontWeight = 'bold';
     } else {
         emergencyWarning.style.display = 'none';
         urgencyBadge.style.background = 'var(--primary-light)';
+        diseaseTitle.style.color = 'var(--text-primary)';
+        if(doctorMsgEl) doctorMsgEl.style.color = 'var(--text-secondary)';
+        if(doctorMsgEl) doctorMsgEl.style.fontWeight = 'normal';
     }
 
     // Recommendations

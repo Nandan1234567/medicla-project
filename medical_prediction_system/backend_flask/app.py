@@ -102,27 +102,56 @@ def predict_disease(symptoms):
                 'error': 'ML model not available'
             }
 
-        # Use the predictor directly - no subprocess, no Unicode issues!
-        result = ml_predictor.predict(symptoms, detailed=False)
+        # PRE-CHECK: Hardcoded Safety Rules (Step 10)
+        # Rule overrides ML output
+        symptoms_lower = symptoms.lower()
+        safety_rules = {
+            'swelling throat': 'Emergency: Potential Anaphylaxis or Airway Obstruction',
+            'bone sticking out': 'Emergency: Open Fracture',
+            'sudden paralysis': 'Emergency: Stroke or Spinal Injury',
+            'chest pain': 'Emergency: Potential Cardiac Event',
+            'difficulty breathing': 'Emergency: Respiratory Distress',
+            'unconscious': 'Emergency: Loss of Consciousness',
+            'severe bleeding': 'Emergency: Hemorrhage'
+        }
 
-        # Check for emergency keywords
-        emergency_keywords = [
-            'chest pain', 'difficulty breathing', 'severe headache', 'stroke',
-            'heart attack', 'unconscious', 'bleeding', 'severe pain',
-            'can\'t breathe', 'choking', 'seizure', 'overdose'
-        ]
+        emergency_override = None
+        for trigger, message in safety_rules.items():
+            if trigger in symptoms_lower:
+                emergency_override = message
+                break
 
-        is_emergency = any(keyword in symptoms.lower() for keyword in emergency_keywords)
+        if emergency_override:
+            # Force emergency result
+            result = {
+                'disease': emergency_override,
+                'confidence': 100.0,
+                'urgency': 'CRITICAL'
+            }
+            is_emergency = True
+            alternatives = []
+        else:
+            # Standard ML prediction
+            result = ml_predictor.predict(symptoms, detailed=False)
 
-        # Get alternatives
-        alternatives = result.get('alternatives', [])[1:4] if len(result.get('alternatives', [])) > 1 else []
+            # Check for emergency keywords (secondary check)
+            emergency_keywords = [
+                'chest pain', 'difficulty breathing', 'severe headache', 'stroke',
+                'heart attack', 'unconscious', 'bleeding', 'severe pain',
+                'can\'t breathe', 'choking', 'seizure', 'overdose'
+            ]
+            is_emergency = any(keyword in symptoms_lower for keyword in emergency_keywords)
+            alternatives = result.get('alternatives', [])[1:4] if len(result.get('alternatives', [])) > 1 else []
 
-        # Generate recommendations (returns dict with plans)
+        # Generate recommendations
         rec_data = generate_recommendations(
             result.get('disease', 'Unknown'),
             result.get('confidence', 0),
             is_emergency
         )
+
+        # Step 11: Final Prediction Output Format
+        doctor_message = "Please consult a doctor immediately." if is_emergency else "If symptoms persist, please see a general practitioner."
 
         return {
             'success': True,
@@ -130,17 +159,19 @@ def predict_disease(symptoms):
                 'disease': result.get('disease', 'Unknown'),
                 'confidence': result.get('confidence', 0),
                 'model': 'LinearSVM',
-                'accuracy': 97.23,
-                'urgencyLevel': result.get('urgency', 'MODERATE')
+                'urgencyLevel': 'CRITICAL' if is_emergency else result.get('urgency', 'MODERATE')
             },
+            'predictedDiagnosis': result.get('disease', 'Unknown'),
+            'confidenceScore': result.get('confidence', 0),
+            'emergencyFlag': is_emergency,
+            'precautions': rec_data['precautions'],
+            'doctorConsultationMessage': doctor_message,
             'alternatives': alternatives,
-            'keyFeatures': [],
             'recommendations': rec_data['actions'],
             'dietPlan': rec_data['diet'],
             'exercisePlan': rec_data['exercise'],
-            'precautions': rec_data['precautions'],
             'isEmergency': is_emergency,
-            'emergencyKeywords': [kw for kw in emergency_keywords if kw in symptoms.lower()] if is_emergency else []
+            'emergencyKeywords': [kw for kw in safety_rules.keys() if kw in symptoms_lower] if is_emergency else []
         }
 
     except Exception as e:

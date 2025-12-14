@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect, url_for
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
@@ -25,6 +25,28 @@ app.config['SECRET_KEY'] = 'medical_healthcare_super_secret_key_2024'
 app.config['JWT_SECRET_KEY'] = 'jwt_medical_secret_key_2024'
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=7)
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/medical_healthcare'
+app.config['GITHUB_CLIENT_ID'] = os.getenv('GITHUB_CLIENT_ID', 'REPLACE_WITH_YOUR_ID')
+app.config['GITHUB_CLIENT_SECRET'] = os.getenv('GITHUB_CLIENT_SECRET', 'REPLACE_WITH_YOUR_SECRET')
+
+# --- GitHub Auth Setup ---
+try:
+    from authlib.integrations.flask_client import OAuth
+    oauth = OAuth(app)
+    github = oauth.register(
+        name='github',
+        client_id=app.config['GITHUB_CLIENT_ID'],
+        client_secret=app.config['GITHUB_CLIENT_SECRET'],
+        access_token_url='https://github.com/login/oauth/access_token',
+        access_token_params=None,
+        authorize_url='https://github.com/login/oauth/authorize',
+        authorize_params=None,
+        api_base_url='https://api.github.com/',
+        client_kwargs={'scope': 'user:email'},
+    )
+except ImportError:
+    oauth = None
+    github = None
+    print("WARNING: Authlib not installed. GitHub login disabled.")
 
 # Configure logging FIRST
 logging.basicConfig(level=logging.INFO)
@@ -871,5 +893,60 @@ def invalid_token_callback(error):
 def missing_token_callback(error):
     return jsonify({'error': 'Authorization token is required'}), 401
 
+# --- GitHub Auth Routes ---
+@app.route('/auth/github')
+def github_login():
+    if not github:
+        return jsonify({'error': 'GitHub Auth not enabled. Please install authlib and configure credentials.'}), 501
+    redirect_uri = url_for('github_authorize', _external=True)
+    return github.authorize_redirect(redirect_uri)
+
+@app.route('/auth/github/callback')
+def github_authorize():
+    if not github:
+        return jsonify({'error': 'GitHub Auth not enabled.'}), 501
+
+    try:
+        # Verify state and token
+        token = github.authorize_access_token()
+        if not token:
+             return jsonify({'error': 'Access denied'}), 401
+
+        resp = github.get('user').json()
+        email_resp = github.get('user/emails').json()
+
+        # Get primary email
+        email = next((e['email'] for e in email_resp if e['primary']), None)
+        if not email:
+            email = resp.get('email') # Fallback
+
+        name = resp.get('name') or resp.get('login')
+
+        # Find or Create User in MongoDB
+        users = mongo.db.users
+        user = users.find_one({'email': email})
+
+        if not user:
+            # Create new user
+            users.insert_one({
+                'name': name,
+                'email': email,
+                'password': '', # No password for OAuth users
+                'created_at': datetime.utcnow(),
+                'provider': 'github'
+            })
+
+        # Create JWT
+        access_token = create_access_token(identity=email)
+
+        # Redirect to Dashboard with token (Insecure for prod, okay for demo)
+        # We append token to URL so frontend can grab it
+        return redirect(f'/dashboard.html?token={access_token}&user={name}&email={email}')
+
+    except Exception as e:
+        logger.error(f"GitHub Auth Error: {str(e)}")
+        # For demo purposes, if it fails (e.g. no internet/bad creds), redirect to login with error
+        return redirect('/login.html?error=GitHub_Login_Failed')
+
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=5000)

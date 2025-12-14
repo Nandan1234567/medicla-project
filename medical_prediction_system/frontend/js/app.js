@@ -478,33 +478,21 @@ function downloadPDF() {
         doc.setTextColor(0, 0, 0); // Reset
         y += 15;
 
-        // --- 5. Recommendations ---
+        // Recommendations (Removed as requested)
+        /*
         doc.setFontSize(14);
         doc.setTextColor(76, 175, 80);
         doc.text("Recommendations", 20, y);
         y += 10;
+        // ... code removed ...
+        */
 
-        doc.setFontSize(11);
-        const recList = document.querySelectorAll('#recommendationsList li div p'); // Grab text from P tags
-        if(recList.length > 0) {
-            recList.forEach(p => {
-                 const text = "- " + p.textContent;
-                 const lines = doc.splitTextToSize(text, 170);
-                 doc.text(lines, 20, y);
-                 y += (lines.length * 6) + 2;
-            });
-        } else {
-             doc.text("No specific recommendations generated.", 20, y);
-        }
-
-        // Footer Warning
-        y = 280;
-        doc.setFontSize(8);
-        doc.setTextColor(150, 150, 150);
-        doc.text("Disclaimer: This is an AI-generated prediction. Not a substitute for professional medical advice.", 105, y, { align: 'center' });
+        // Footer - Clean, no disclaimer if requested to remove "unwanted text"
+        // Just page number if needed, or empty.
 
         // Save
-        doc.save(`Health_Report_${user.name.replace(/\s+/g,'_')}.pdf`);
+        const filename = `Health_Report_${user.name.replace(/\s+/g,'_')}.pdf`;
+        doc.save(filename);
 
     } catch (e) {
         console.error(e);
@@ -515,6 +503,18 @@ function downloadPDF() {
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
+
+    // GitHub Auth Callback Handler
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('token')) {
+        localStorage.setItem('token', urlParams.get('token'));
+        localStorage.setItem('user', JSON.stringify({
+            name: urlParams.get('user') || 'GitHub User',
+            email: urlParams.get('email') || ''
+        }));
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
 
     // Auth Page
     const authForm = document.getElementById('authForm');

@@ -39,8 +39,25 @@
   </nav>
 
 
-  <!-- Centered Dashboard Layout -->
-  <div class="container" style="max-width: 900px; padding-top: 100px; padding-bottom: 3rem;">
+  <!-- Tab Navigation -->
+  <div class="container" style="max-width: 900px; padding-top: 100px;">
+    <div class="glass-panel" style="padding: 1rem; margin-bottom: 2rem;">
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <button class="tab-btn active" onclick="switchTab('dashboard')" id="dashboardTab">
+          🏠 Dashboard
+        </button>
+        <button class="tab-btn" onclick="switchTab('history')" id="historyTab">
+          📊 History
+        </button>
+        <button class="tab-btn" onclick="switchTab('profile')" id="profileTab">
+          👤 Profile
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div class="container" id="dashboardContent" style="max-width: 900px; padding-bottom: 3rem;">
 
     <!-- Prediction Form (Centered at Top) -->
     <div class="glass-panel" style="padding: 2rem; margin-bottom: 2rem;">
@@ -154,6 +171,28 @@
 
       <div style="margin-top: 2rem; text-align: center;">
         <button onclick="resetDashboard()" class="btn btn-secondary">New Prediction</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History Content (Hidden by default) -->
+  <div class="container" id="historyContent" style="max-width: 900px; padding-bottom: 3rem; display: none;">
+    <div class="glass-panel" style="padding: 2rem;">
+      <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-color);">📊 Prediction History</h2>
+
+      <div id="historyList">
+        <p style="text-align: center; color: var(--text-secondary);">Loading history...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Content (Hidden by default) -->
+  <div class="container" id="profileContent" style="max-width: 900px; padding-bottom: 3rem; display: none;">
+    <div class="glass-panel" style="padding: 2rem;">
+      <h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary-color);">👤 User Profile</h2>
+
+      <div id="profileInfo" style="max-width: 500px; margin: 0 auto;">
+        <p style="text-align: center; color: var(--text-secondary);">Loading profile...</p>
       </div>
     </div>
   </div>

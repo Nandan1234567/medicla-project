@@ -261,6 +261,147 @@ function resetDashboard() {
     document.getElementById('predictionForm').reset();
 }
 
+// --- Tab Switching ---
+function switchTab(tabName) {
+    // Hide all content
+    document.getElementById('dashboardContent').style.display = 'none';
+    document.getElementById('historyContent').style.display = 'none';
+    document.getElementById('profileContent').style.display = 'none';
+
+    // Remove active class from all tabs
+    document.getElementById('dashboardTab').classList.remove('active');
+    document.getElementById('historyTab').classList.remove('active');
+    document.getElementById('profileTab').classList.remove('active');
+
+    // Show selected content and activate tab
+    if (tabName === 'dashboard') {
+        document.getElementById('dashboardContent').style.display = 'block';
+        document.getElementById('dashboardTab').classList.add('active');
+    } else if (tabName === 'history') {
+        document.getElementById('historyContent').style.display = 'block';
+        document.getElementById('historyTab').classList.add('active');
+        loadHistory();
+    } else if (tabName === 'profile') {
+        document.getElementById('profileContent').style.display = 'block';
+        document.getElementById('profileTab').classList.add('active');
+        loadProfile();
+    }
+}
+
+// --- Load History ---
+async function loadHistory() {
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Loading history...</p>';
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/prediction/history?limit=10`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.predictions && data.predictions.length > 0) {
+            historyList.innerHTML = '';
+            data.predictions.forEach(pred => {
+                const card = document.createElement('div');
+                card.className = 'history-card';
+
+                const date = new Date(pred.createdAt).toLocaleString();
+                const isEmergency = pred.isEmergency;
+                const urgencyColor = isEmergency ? 'var(--error)' : 'var(--primary-color)';
+
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                        <div>
+                            <h4 style="margin: 0; color: ${urgencyColor};">${pred.result.disease}</h4>
+                            <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; color: var(--text-secondary);">${date}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">${Math.round(pred.result.confidence)}%</div>
+                            <div style="font-size: 0.75rem; color: var(--text-secondary);">Confidence</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <strong>Symptoms:</strong> ${pred.symptoms}
+                    </div>
+                    ${isEmergency ? '<div style="margin-top: 0.5rem; color: var(--error); font-weight: 600;">⚠️ Emergency</div>' : ''}
+                `;
+
+                historyList.appendChild(card);
+            });
+        } else {
+            historyList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No prediction history yet. Make a prediction to see it here!</p>';
+        }
+    } catch (err) {
+        console.error('History Error:', err);
+        historyList.innerHTML = '<p style="text-align: center; color: var(--error);">Failed to load history. Please try again.</p>';
+    }
+}
+
+// --- Load Profile ---
+async function loadProfile() {
+    const profileInfo = document.getElementById('profileInfo');
+    profileInfo.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Loading profile...</p>';
+
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/user/profile`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.user) {
+            const user = data.user;
+            const registeredDate = new Date(user.createdAt).toLocaleDateString();
+            const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never';
+
+            profileInfo.innerHTML = `
+                <div class="glass-panel" style="padding: 1.5rem;">
+                    <div class="profile-field">
+                        <span class="profile-label">Name</span>
+                        <span class="profile-value">${user.name}</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="profile-label">Email</span>
+                        <span class="profile-value">${user.email}</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="profile-label">Phone</span>
+                        <span class="profile-value">${user.phone || 'N/A'}</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="profile-label">Gender</span>
+                        <span class="profile-value">${user.gender || 'N/A'}</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="profile-label">Member Since</span>
+                        <span class="profile-value">${registeredDate}</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="profile-label">Last Login</span>
+                        <span class="profile-value">${lastLogin}</span>
+                    </div>
+                    <div class="profile-field">
+                        <span class="profile-label">Account Status</span>
+                        <span class="profile-value" style="color: var(--success);">✓ Active</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            profileInfo.innerHTML = '<p style="text-align: center; color: var(--error);">Failed to load profile.</p>';
+        }
+    } catch (err) {
+        console.error('Profile Error:', err);
+        profileInfo.innerHTML = '<p style="text-align: center; color: var(--error);">Failed to load profile. Please try again.</p>';
+    }
+}
+
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
